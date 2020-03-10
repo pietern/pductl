@@ -63,7 +63,15 @@ func (w *Watchdog) run(ch chan<- State) {
 
 			// Reset timer.
 			if !t.Stop() {
-				<-t.C
+				// Try to drain the timer channel in case it has
+				// fired but has not yet been processed.
+				//
+				// Also see https://github.com/golang/go/issues/27169
+				//
+				select {
+				case <-t.C:
+				default:
+				}
 			}
 			t.Reset(w.timeout)
 
