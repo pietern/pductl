@@ -7,7 +7,8 @@ import (
 type State int
 
 const (
-	Present State = iota
+	Invalid State = iota
+	Present
 	Absent
 )
 
@@ -54,6 +55,7 @@ func (w *Watchdog) run(ch chan<- State) {
 	t := time.NewTimer(w.timeout)
 	defer t.Stop()
 
+	prev := Invalid
 	for {
 		select {
 		case _, ok := <-w.kick:
@@ -76,7 +78,10 @@ func (w *Watchdog) run(ch chan<- State) {
 			t.Reset(w.timeout)
 
 			// Notify downstream of presence.
-			ch <- Present
+			if prev != Present {
+				prev = Present
+				ch <- Present
+			}
 
 		case _, ok := <-t.C:
 			if !ok {
@@ -84,7 +89,10 @@ func (w *Watchdog) run(ch chan<- State) {
 			}
 
 			// Notify downstream of absence.
-			ch <- Absent
+			if prev != Absent {
+				prev = Absent
+				ch <- Absent
+			}
 		}
 	}
 }
