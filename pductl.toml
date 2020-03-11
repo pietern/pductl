@@ -1,0 +1,25 @@
+[pdu]
+address = "192.168.1.24:23"
+username = "apc"
+password = "apc"
+timeout = "1s"
+
+[[outlet]]
+name = "Amp 1"
+udp = "127.0.0.1:29901"
+delay = "5m"
+
+[[outlet]]
+name = "Amp 2"
+udp = "127.0.0.1:29902"
+delay = "5m"
+
+[[outlet]]
+name = "Amp 3"
+udp = "127.0.0.1:29903"
+delay = "5m"
+
+[[outlet]]
+name = "Amp 4"
+udp = "127.0.0.1:29904"
+delay = "5m"
