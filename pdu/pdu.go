@@ -59,7 +59,7 @@ func (p *PDU) Authenticate(username, password string) error {
 		&expect.BExp{R: `APC>\s*`},
 	}, p.timeout)
 	if err != nil {
-		log.Fatalf("ExpectBatch failed: %v , res: %v", err, res)
+		log.Fatalf("ExpectBatch failed: %v , res: %#v", err, res)
 	}
 
 	return nil
@@ -84,7 +84,7 @@ func (p *PDU) Run(args ...string) ([]string, error) {
 		&expect.BExp{R: `\r\n\s+OK\r\n(([^\r\n]+\r\n)*)APC>\s*`},
 	}, p.timeout)
 	if err != nil {
-		log.Fatalf("ExpectBatch failed: %v , res: %v", err, res)
+		log.Fatalf("ExpectBatch failed: %v , res: %#v", err, res)
 	}
 
 	lines := res[len(res)-1].Match[1]
