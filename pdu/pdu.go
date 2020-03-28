@@ -105,3 +105,15 @@ func (p *PDU) Whoami() (string, error) {
 
 	return lines[0], nil
 }
+
+func (p *PDU) Logout() error {
+	res, err := p.ex.ExpectBatch([]expect.Batcher{
+		&expect.BSnd{S: "logout\r\n"},
+		&expect.BExp{R: `\r\nBye.\r\n\r\nConnection Closed - Bye\r\n`},
+	}, p.timeout)
+	if err != nil {
+		log.Fatalf("ExpectBatch failed: %v , res: %#v", err, res)
+	}
+
+	return p.ex.Close()
+}
