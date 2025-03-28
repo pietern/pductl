@@ -1,25 +1,29 @@
-[pdu]
-address = "192.168.1.24:23"
-username = "apc"
-password = "apc"
-timeout = "1s"
+[[snmp]]
+address = "192.168.1.240"
+username = "username"
+password = "authentication passphrase"
+key = "privacy passphrase"
 
 [[outlet]]
 name = "Amp 1"
+oid = ".1.3.6.1.4.1.318.1.1.12.3.3.1.1.4.5"
 udp = "127.0.0.1:29901"
 delay = "5m"
 
 [[outlet]]
 name = "Amp 2"
+oid = ".1.3.6.1.4.1.318.1.1.12.3.3.1.1.4.6"
 udp = "127.0.0.1:29902"
 delay = "5m"
 
 [[outlet]]
 name = "Amp 3"
+oid = ".1.3.6.1.4.1.318.1.1.12.3.3.1.1.4.7"
 udp = "127.0.0.1:29903"
 delay = "5m"
 
 [[outlet]]
 name = "Amp 4"
+oid = ".1.3.6.1.4.1.318.1.1.12.3.3.1.1.4.8"
 udp = "127.0.0.1:29904"
 delay = "5m"

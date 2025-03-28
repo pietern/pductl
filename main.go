@@ -5,31 +5,39 @@ import (
 	"log"
 
 	"github.com/BurntSushi/toml"
-	"github.com/pietern/pductl/pdu"
+	"github.com/pietern/pductl/snmp"
 	"github.com/pietern/pductl/watchdog"
 )
 
 type wrapper struct {
-	c Configuration
+	config Configuration
+	snmp   *snmp.Connection
 }
 
-func (w *wrapper) Run(args ...string) error {
-	pdu, err := pdu.Dial("tcp", w.c.PDU.Address, w.c.PDU.Timeout.Duration)
+func newWrapper(config Configuration) *wrapper {
+	var err error
+
+	w := &wrapper{config: config}
+	w.snmp, err = snmp.Dial(snmp.Config{
+		Address:  config.SNMP.Address,
+		Username: config.SNMP.Username,
+		Password: config.SNMP.Password,
+		Key:      config.SNMP.Key,
+	})
+
 	if err != nil {
-		return err
+		log.Fatal(err)
 	}
 
-	err = pdu.Authenticate(w.c.PDU.Username, w.c.PDU.Password)
-	if err != nil {
-		return err
-	}
+	return w
+}
 
-	_, err = pdu.Run(args...)
-	if err != nil {
-		return err
-	}
+func (w *wrapper) PowerOn(oid string) error {
+	return w.snmp.Set(oid, 1)
+}
 
-	return pdu.Logout()
+func (w *wrapper) PowerOff(oid string) error {
+	return w.snmp.Set(oid, 2)
 }
 
 func main() {
@@ -43,14 +51,8 @@ func main() {
 		log.Fatal(err)
 	}
 
-	// Convenience wrapper to connect, authenticate, run a
-	// command, and logout again.
-	//
-	// It proves difficult to keep a single connection alive for a
-	// longer period of time, so instead we just recreate a
-	// connection every time we need to perform some action.
-	//
-	w := &wrapper{c}
+	// Convenience wrapper to power outlets on and off.
+	w := newWrapper(c)
 
 	// Create aggregate channel for tuples containing both the
 	// presence or absence signal and the outlet information.
@@ -73,24 +75,24 @@ func main() {
 		}(monitor, outlet)
 	}
 
-	// Run something to see if the credentials are valid.
-	err = w.Run("whoami")
-	if err != nil {
-		log.Fatal(err)
-	}
+	// // Run something to see if the credentials are valid.
+	// err = w.Run("whoami")
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
 
 	// Main loop.
 	for t := range ch {
 		switch t.State {
 		case watchdog.Present:
 			log.Printf("Turning %v on\n", t.Outlet.Name)
-			err := w.Run("on", t.Outlet.Name)
+			err := w.PowerOn(t.Outlet.OID)
 			if err != nil {
 				log.Fatal(err)
 			}
 		case watchdog.Absent:
 			log.Printf("Turning %v off\n", t.Outlet.Name)
-			err := w.Run("off", t.Outlet.Name)
+			err := w.PowerOff(t.Outlet.OID)
 			if err != nil {
 				log.Fatal(err)
 			}

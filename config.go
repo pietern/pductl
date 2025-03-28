@@ -15,20 +15,25 @@ func (d *duration) UnmarshalText(text []byte) error {
 	return err
 }
 
-type PDU struct {
+type SNMP struct {
 	Address  string
 	Username string
+
+	// Use SHA authentication with this password.
 	Password string
-	Timeout  duration
+
+	// Use AES encryption with this key.
+	Key string
 }
 
 type Outlet struct {
 	Name  string
+	OID   string
 	UDP   string
 	Delay duration
 }
 
 type Configuration struct {
-	PDU    PDU
+	SNMP   SNMP
 	Outlet []Outlet
 }
